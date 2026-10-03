@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-13T15:51:50.743Z",
+  "version": "0.9.6",
+  "sourceCommit": "d62522903ab2a9f27b9df4077a48dbe4472e8a55",
+  "environment": "isolated local E2E Worker; not a deployed production environment",
+  "inference": "deterministic fakeAI fixture; no paid or production inference",
+  "catalog": "small seeded demonstration catalog; not a live availability or billing claim",
+  "privacy": "local fixture accounts only; one-time key masked; fixture reset after capture",
+  "buildHtmlSha256": {
+    "chat": "618a977036db2fe1bdbd45bf728703850674641f0a5edf44d92cb1d9e6d660d5",
+    "login": "e9b6b746c3232bab2e8b1f9851622aff92b3819e07800e4c7ea0882399a98acc",
+    "keys": "39bd43f35bd3b1dc0169c7b60cbf5c104534c5c80b320a786f58559b9ad697e7",
+    "settings/models": "2938d2e444d03be1ed030f87d7ed863b9997d06ff1030c204f0b2a0afda9bcb2",
+    "settings/cache": "16e3811a0d9f5c04367569be7d80b568109b396a026a61c9feb382b1a1c497e6"
+  },
+  "screenshots": [
+    {
+      "file": "vibeflare-landing.png",
+      "route": "/chat/",
+      "description": "Dark workspace with shared Club assets and distinct task controls.",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "theme": "dark",
+      "sha256": "f115290493735ca08b93ef0b56b0e688212b525a52513aea88628e7a488f2751",
+      "bytes": 539695
+    },
+    {
+      "file": "vibeflare-settings-models.png",
+      "route": "/settings/models/",
+      "description": "Personal model checkboxes, paid-model policy and linkable selected Settings section.",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "theme": "dark",
+      "sha256": "e58983832ea903f4027e1f5bda37b4c8462e3ad8b2328119e1dd5d1463cd0f6c",
+      "bytes": 726363
+    },
+    {
+      "file": "vibeflare-settings-light.png",
+      "route": "/settings/cache/",
+      "description": "Light-theme Settings, response-cache controls and prompt-template inputs.",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "theme": "light",
+      "sha256": "b99beba6c3382cb2cc3541f15bd80f90fadaad442b687a6f77311e33c01037de",
+      "bytes": 685081
+    },
+    {
+      "file": "vibeflare-settings-mobile.png",
+      "route": "/settings/models/",
+      "description": "390px light-theme Settings with wrapped navigation and full-size targets.",
+      "viewport": {
+        "width": 390,
+        "height": 950
+      },
+      "theme": "light",
+      "sha256": "17273cdbb20d2ad7a585959eab9ae44bcb9a28bc39c873409f3f76829ccef265",
+      "bytes": 203648
+    },
+    {
+      "file": "vibeflare-chat.png",
+      "route": "/chat/?chat_id=<fixture>",
+      "description": "Persisted browser conversation and Workspace history; response is explicitly the local E2E fixture.",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "theme": "dark",
+      "sha256": "ff61ca9c128aff06ec68e76c46f35374fc1c38506f84039bb4efe6bf9241245b",
+      "bytes": 527537
+    },
+    {
+      "file": "vibeflare-key-creation.png",
+      "route": "/keys/",
+      "description": "One-time local API-key reveal with the secret block deliberately masked.",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "theme": "dark",
+      "sha256": "70b116b0aed7aa863817ee51ad7038ffd5860942fdd76582de729e80bd8aa7b0",
+      "bytes": 535914
+    },
+    {
+      "file": "vibeflare-status-doctor.png",
+      "route": "cli",
+      "description": "Unedited status and doctor output, rendered in terminal-style HTML using a synthetic local ownership receipt.",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "theme": "terminal",
+      "sha256": "cb3aed88e7f06a4462ebe3a5615c07d0081647d896904d4c3b723c2621f776f6",
+      "bytes": 67977
+    },
+    {
+      "file": "vibeflare-login.png",
+      "route": "/login/",
+      "description": "Branded sign-in page; the local fixture offers passkey login.",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "theme": "dark",
+      "sha256": "33e96c869e360d98d18e1676015d5d866cac778b87e1a9720d090288170504ee",
+      "bytes": 616004
+    }
+  ]
+}

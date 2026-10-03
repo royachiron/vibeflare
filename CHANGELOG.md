@@ -1,0 +1,89 @@
+# Changelog
+
+All notable VibeFlare changes are documented here.
+
+## 0.9.6 - 2026-09-13
+
+- Persist image prompts/results, embedding inputs/vectors, original audio and transcripts in owned conversation history, including refresh and follow-up requests.
+- Exclude live-only Deepgram Flux from uploaded-file transcription; use correct Whisper/Turbo/Nova-3 request formats and normalize Nova transcripts.
+- Keep Text, Image, Embeddings and Audio in one consistent workspace layout with matching input/drop zones across desktop and mobile.
+- Import actual text-file content into the text, image-prompt and embeddings inputs; add audio drag-and-drop, readable errors and retry without losing the selected file.
+- Explain semantic-search embeddings directly in their tab and preserve complete downloadable vector results.
+- Apply private-file ownership checks to legacy file URLs and preserve media attachments for active conversations without changing the 14-day inactive-history policy.
+
+## 0.9.5 - 2026-09-13
+
+- Add a persistent checkbox beside each available model in Settings > Models. Personal selections determine chat picker visibility without changing other accounts or API access.
+- Keep unchecked models in Settings for re-selection; preserve selections through catalog refreshes and synchronize other open tabs. Empty selections link back to Settings instead of silently re-enabling models.
+- Add direct Settings URLs for Account, Devices, Auth, Models, Cache and owner-only Invites, with real links, reload support and browser Back/Forward navigation.
+- Protect private preference keys from the shared settings API and clean them up when the user account is deleted. No database schema migration or inference calls are needed.
+
+## 0.9.4 - 2026-09-13
+
+- Remove the internal "billing unknown" suffix from model selection. Unclassified records are withheld, not presented as free or paid.
+- Read Cloudflare's structured model registry and explicit `require_workers_paid` flag instead of inferring plan access from the pricing table. Missing prices, beta status and plan access are handled separately.
+- Stop offering models absent from the current registry or past their documented retirement date. Existing conversations remain intact.
+- Retain the last verified catalog during metadata outages and keep the picker usable when an explicit refresh fails. Older catalogs upgrade immediately on first use.
+- Keep Exclude paid enabled by default and preserve the dollar marker for paid models after opt-in. No inference probes are added.
+
+## 0.9.3 - 2026-09-12
+
+- Add owner-controlled **Exclude paid**, enabled by default, with a persisted policy and dollar markers for paid models when explicitly included.
+- Classify model billing from Cloudflare's public metadata and real-request errors, without synthetic inference probes. Preserve learned restrictions through catalog refreshes and block excluded requests before inference.
+- Show private conversations below **Workspace** immediately after the first message, including mobile navigation, shared History updates and local titles with no AI cost.
+- Fix the settings payload mismatch and keep restored conversations' model selection synchronized with the picker.
+- Zero-config installs now load Cloudflare's full public Workers AI catalog with a 24-hour lazy refresh, an explicit Refresh models action, known-good models ranked first, and Llama 3.2 3B as the default text model.
+- Workers AI usage now records `usage.neurons` returned by Cloudflare, and the header shows the live neuron count against the 10,000-neuron daily free allocation instead of only a rounded percentage.
+- Root navigation is now decided at the Worker edge: fresh installs go directly to `/setup`, authenticated users to `/chat`, and signed-out existing installs directly to `/login` without flashing `/chat` first.
+
+## 0.9.2 - 2026-09-11
+
+- **Use GitHub** now works with zero deployment environment variables by bootstrapping a per-deployment GitHub App through GitHub's App Manifest flow; generated OAuth credentials stay private in D1.
+- Existing `GITHUB_CLIENT_ID` / `--github-client-id` Device Flow configuration remains an explicit advanced override.
+
+## 0.9.1 - 2026-09-11
+
+- Route brand-new standalone deployments to `/setup` instead of the returning-user sign-in screen.
+- Expose first-run setup state through the public auth-methods probe and cover the root-to-setup flow in browser acceptance.
+
+## 0.9.0 - 2026-09-11
+
+Initial standalone public release.
+
+### What members get
+
+- One-click **Deploy to Cloudflare** installation from the repository README, with automatic D1, R2, Workers AI, Durable Object, migration, UI-build, and Worker deployment setup.
+- Guided `vf setup` for a VibeFlare-owned Worker, D1 database, and R2 bucket.
+- Passkey-first standalone browser login, optional GitHub Device Flow, and a separate Cloudflare Access mode.
+- Browser chat plus an OpenAI-compatible `/v1` API.
+- API-key creation and revocation, model discovery, usage/audit views, chat history, and private files.
+- `vf status`, `vf doctor`, and receipt-based `vf update`.
+- Preview-first, ownership-receipt-based uninstall that refuses ambiguous deletion.
+
+### Release hardening
+
+- The deploy-button path requires no pre-generated session secret or Cloudflare model-catalog API token: session signing self-initializes in D1, WebAuthn derives its relying-party origin from the request URL, and a known-good Workers AI model is available immediately.
+- Root deploy-button Wrangler configuration is validated with a Wrangler dry-run on every release gate.
+- Browser authentication modes are mutually exclusive so Cloudflare Access cannot compete with passkey/GitHub login.
+- `vf doctor` now checks quota through the bearer-key `/v1/quota` API, so a valid CLI key can verify server, API auth, and quota end-to-end.
+- Unauthorized browser chat paths return to the real `/login` page instead of a nonexistent auth page.
+- Install/update/uninstall use durable ownership receipts and preserve retry state on partial failure.
+- Clean release installs resolve their project-local Wrangler correctly even when pnpm places it under the Worker package.
+- Fresh workers.dev deployments tolerate bounded propagation delay before setup declares health failure.
+- Migration history is checkpointed immediately after application so later deploy/health failures cannot erase schema evidence.
+- Deleting an invited user preserves the invite's consumed state while safely releasing its historical user reference.
+- D1 migrations use a unique ordered `0001`–`0007` filename sequence.
+- First model access automatically initializes a brand-new Workers AI catalog; members no longer need to find and run a manual sync after setup.
+- First-run catalog readiness is committed only after a complete sync, so concurrent page loads cannot observe a partial model list or choose the wrong default model.
+- Browser chat prefers a live-proven text model instead of trusting arbitrary catalog order.
+- Workers AI reasoning, vision, speech-to-text, and text-to-speech payload differences are normalized across supported model families.
+- Setup generates deployment-specific Wrangler configuration instead of requiring account IDs in tracked source.
+- Dependency upgrades remove known production audit vulnerabilities while preserving the approved UI screenshots.
+- The release gate covers build, generated Wrangler validation, production dependency audit, unit/integration tests, user journeys, and the deterministic desktop/mobile UI matrix.
+- pnpm uses a three-day strict dependency release-age gate and an explicit dependency build-script allowlist.
+
+### Compatibility
+
+- Node.js 22.12 or newer.
+- Bun is required to build the standalone `vf` command.
+- Cloudflare Wrangler is installed project-locally from the locked dependency graph.

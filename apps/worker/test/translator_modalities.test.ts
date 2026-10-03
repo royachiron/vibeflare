@@ -1,0 +1,111 @@
+import { describe, expect, it } from 'vitest';
+import {
+  chatToWai,
+  sttReqToWai,
+  ttsOutToBinary,
+  ttsReqToWai,
+  waiStreamToOpenAISSE,
+  waiToChat,
+} from '../src/api/translator';
+
+function bytes(...values: number[]): ArrayBuffer {
+  return new Uint8Array(values).buffer;
+}
+
+describe('Workers AI modality translation', () => {
+  it('sends vision image data as the uint8 array expected by Workers AI', async () => {
+    const result = await chatToWai({
+      model: '@cf/vision',
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'text', text: 'describe this' },
+          { type: 'image_url', image_url: { url: 'data:image/png;base64,AQID' } },
+        ],
+      }],
+    }, 'image-to-text');
+
+    expect(result).toEqual({ image: [1, 2, 3], prompt: 'describe this' });
+  });
+
+  it('uses reasoning text when a reasoning model returns null content', () => {
+    const result = waiToChat({
+      choices: [{ message: { content: null, reasoning: 'reasoning-model answer' }, finish_reason: 'stop' }],
+    }, '@cf/openai/gpt-oss-20b', 'chatcmpl-test');
+
+    expect(result.choices[0]?.message.content).toBe('reasoning-model answer');
+  });
+
+  it('preserves Workers AI neuron usage on synchronous chat responses', () => {
+    const result = waiToChat({
+      response: 'OK',
+      usage: { prompt_tokens: 37, completion_tokens: 2, total_tokens: 39, neurons: 0.232059 },
+    }, '@cf/meta/llama-3.2-3b-instruct', 'chatcmpl-usage');
+    expect(result.usage).toMatchObject({
+      prompt_tokens: 37,
+      completion_tokens: 2,
+      total_tokens: 39,
+      neurons: 0.232059,
+    });
+  });
+
+  it('surfaces the final cumulative neuron usage from a Workers AI stream', async () => {
+    const seen: Array<{ neurons?: number; prompt_tokens?: number; completion_tokens?: number }> = [];
+    const source = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('data: {"response":"OK","usage":{"prompt_tokens":37,"completion_tokens":0,"neurons":0.1711}}\n\n'));
+        controller.enqueue(new TextEncoder().encode('data: {"response":"","usage":{"prompt_tokens":37,"completion_tokens":2,"neurons":0.232059}}\n\n'));
+        controller.close();
+      },
+    });
+    await new Response(waiStreamToOpenAISSE(
+      source,
+      '@cf/meta/llama-3.2-3b-instruct',
+      'chatcmpl-stream-usage',
+      (usage) => seen.push(usage),
+    )).text();
+    expect(seen.at(-1)).toMatchObject({ prompt_tokens: 37, completion_tokens: 2, neurons: 0.232059 });
+  });
+
+  it('maps streamed reasoning deltas to OpenAI content deltas', async () => {
+    const source = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"reasoning":"streamed answer"}}]}\n\n'));
+        controller.close();
+      },
+    });
+
+    const body = await new Response(waiStreamToOpenAISSE(source, '@cf/openai/gpt-oss-20b', 'chatcmpl-stream')).text();
+    expect(body).toContain('"content":"streamed answer"');
+    expect(body).toContain('data: [DONE]');
+  });
+
+  it('uses each provider’s actual file-transcription input contract', async () => {
+    expect(sttReqToWai(bytes(1, 2, 3), '@cf/openai/whisper')).toEqual({ audio: [1, 2, 3] });
+    expect(sttReqToWai(bytes(1, 2, 3), '@cf/openai/whisper-large-v3-turbo')).toEqual({ audio: 'AQID', task: 'transcribe' });
+    const nova = sttReqToWai(bytes(1, 2, 3), '@cf/deepgram/nova-3', 'audio/mpeg') as { audio: { body: ReadableStream; contentType: string } };
+    expect(nova.audio.contentType).toBe('audio/mpeg');
+    expect([...new Uint8Array(await new Response(nova.audio.body).arrayBuffer())]).toEqual([1, 2, 3]);
+  });
+
+  it('uses Deepgram text input while retaining prompt input for other TTS models', () => {
+    expect(ttsReqToWai({ model: '@cf/deepgram/aura-2-en', input: 'hello', voice: 'luna' }))
+      .toEqual({ text: 'hello', voice: 'luna' });
+    expect(ttsReqToWai({ model: '@cf/myshell-ai/melotts', input: 'hello', speed: 1.1 }))
+      .toEqual({ prompt: 'hello', speed: 1.1 });
+  });
+
+  it('decodes nested base64 TTS output', async () => {
+    expect([...new Uint8Array(await ttsOutToBinary({ audio: 'AQID' }))]).toEqual([1, 2, 3]);
+  });
+
+  it('accepts raw streamed TTS output', async () => {
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array([4, 5, 6]));
+        controller.close();
+      },
+    });
+    expect([...new Uint8Array(await ttsOutToBinary(stream))]).toEqual([4, 5, 6]);
+  });
+});

@@ -1,0 +1,38 @@
+---
+import Brand from '../brand/Brand.astro';
+import { WorkspaceChats } from '../widgets/WorkspaceChats';
+import BrandIcon from '../brand/BrandIcon.astro';
+const pathname = Astro.url.pathname;
+
+const NAV_LINKS = [
+  { href: '/chat', label: 'Workspace', icon: 'grid' },
+  { href: '/history', label: 'History', icon: 'clock' },
+  { href: '/files', label: 'Files', icon: 'folder' },
+  { href: '/analytics', label: 'Data', icon: 'database' },
+  { href: '/keys', label: 'API Keys', icon: 'lock' },
+  { href: '/settings', label: 'Settings', icon: 'settings' },
+];
+---
+<aside id="sidebar" class="vf-sidebar flex" aria-label="Main navigation">
+  <div class="vf-sidebar-brand"><Brand /><button id="menu-close" class="vf-icon-button lg:hidden" type="button" aria-label="Close menu"><BrandIcon name="close" /></button></div>
+  <a class="vf-new-chat" href="/chat" data-astro-reload><BrandIcon name="plus" size={18} />New chat<BrandIcon name="sparkles" size={16} /></a>
+  <p class="vf-nav-caption">YOUR SPACE</p>
+  <nav class="vf-navigation" aria-label="Workspace navigation">
+    {NAV_LINKS.map(({ href, label, icon }) => {
+      const active = pathname === href || pathname.startsWith(href + '/');
+      return <div class="vf-nav-group min-w-0"><a href={href} aria-current={active ? 'page' : undefined} class:list={['vf-nav-link', { 'is-active': active }]}>
+        <BrandIcon name={icon} size={20}/><span>{label}</span>
+        {active && <span class="vf-nav-active-dot" aria-hidden="true"></span>}
+      </a>
+      {href === "/chat" && <WorkspaceChats client:load />}
+      </div>;
+    })}
+  </nav>
+  <div class="vf-sidebar-bottom">
+    <div class="vf-sidebar-note">
+      <BrandIcon name="lightbulb" size={24}/><p>A place for<br /><strong>your next idea.</strong></p>
+      <span class="vf-accent-line"></span>
+    </div>
+    <a href="/settings" class="vf-account-link"><span class="vf-account-avatar"><BrandIcon name="user" size={18}/></span><span>Workspace settings<small>Make it yours</small></span><BrandIcon name="chevron-right" size={16}/></a>
+  </div>
+</aside>

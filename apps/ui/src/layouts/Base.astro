@@ -1,0 +1,50 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '../styles/global.css';
+import '../styles/brand.css';
+import '../styles/controls.css';
+import '../styles/task-workspace.css';
+
+export interface Props {
+  title?: string;
+  bodyClass?: string;
+  /** Emit <meta name="referrer" content="no-referrer"> to suppress Referer header (e.g. /signup). */
+  noReferrer?: boolean;
+}
+
+const { title = 'VibeFlare', bodyClass = 'h-screen overflow-hidden bg-[var(--color-bg)]', noReferrer = false } = Astro.props;
+---
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#061329" />
+  <title>{title}</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  {noReferrer && <meta name="referrer" content="no-referrer" />}
+  <ClientRouter />
+  <!-- Inline initialization prevents a light/dark flash before the first paint. -->
+  <script is:inline>
+    (() => {
+      let mode = 'dark';
+      try { mode = localStorage.getItem('vf-theme') === 'light' ? 'light' : 'dark'; } catch {}
+      document.documentElement.dataset.theme = mode;
+    })();
+  </script>
+  <script>
+    import { initTheme } from '../lib/theme';
+    import { initBrandInteractions } from '../lib/brand-interactions';
+    const boot = () => { initTheme(); initBrandInteractions(); };
+    boot();
+    document.addEventListener('astro:page-load', boot);
+    document.addEventListener('astro:after-swap', initTheme);
+  </script>
+</head>
+<body class={bodyClass}>
+  <a class="vf-skip-link" href="#main-content">Skip to content</a>
+  <slot />
+</body>
+</html>
